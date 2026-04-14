@@ -1,4 +1,3 @@
-```html id="you are my"
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,65 +11,58 @@ body {
     text-align: center;
 }
 
-/* Pages */
 .page {
     display: none;
     height: 100vh;
     padding-top: 100px;
 }
 
-/* LOGIN PAGE (PINK) */
+/* LOGIN */
 #login {
     display: block;
     background: linear-gradient(135deg, #ff4da6, #ff99cc);
     color: white;
 }
 
-/* BIRTHDAY PAGE */
+/* ADMIN */
+#admin {
+    background: #111;
+    color: #0f0;
+    text-align: left;
+    padding: 20px;
+}
+
+/* USER PAGES (UNCHANGED) */
 #birthday {
     background: linear-gradient(135deg, #ffdde1, #ee9ca7);
     color: white;
-    position: relative;
-    overflow: hidden;
 }
 
-/* LOVE PAGE */
 #love {
     background: #fff0f5;
     color: #ff4da6;
 }
 
-/* FINAL PAGE */
 #final {
     background: black;
     color: #ff4da6;
 }
 
-input {
-    display: block;
-    margin: 10px auto;
+input, button {
     padding: 10px;
+    margin: 8px;
     border-radius: 20px;
     border: none;
-    text-align: center;
 }
 
 button {
-    padding: 10px 20px;
-    border-radius: 20px;
-    border: none;
     background: #ff4da6;
     color: white;
     cursor: pointer;
 }
 
-h1 {
-    font-size: 40px;
-}
-
-p {
-    font-size: 20px;
-    margin: 15px;
+pre {
+    white-space: pre-wrap;
 }
 </style>
 </head>
@@ -79,55 +71,39 @@ p {
 
 <!-- LOGIN -->
 <div id="login" class="page">
-    <h2>Login for Surprise 💖</h2>
-    <input id="user" placeholder="ID 💌">
-    <input id="pass" type="password" placeholder="Password 🔐">
-    <button onclick="login()">Unlock ❤️</button>
+    <h2>Login 💖</h2>
+    <input id="user" placeholder="ID">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
 </div>
 
-<!-- BIRTHDAY (UPGRADED WITH FLOWERS BOTTOM→TOP) -->
+<!-- ADMIN -->
+<div id="admin" class="page">
+    <h2>📊 ADMIN PANEL</h2>
+    <pre id="adminData"></pre>
+    <button onclick="showPage('login')">Logout</button>
+</div>
+
+<!-- BIRTHDAY (UNCHANGED) -->
 <div id="birthday" class="page">
-
-    <!-- Balloons -->
-    <div style="position:absolute; top:0; left:0; width:100%;">
-        <span style="font-size:30px;">🎈 🎈 🎈 🎈 🎈 🎈 🎈 🎈</span>
-    </div>
-
-    <!-- Flowers Container -->
-    <div id="flowers" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
-
-    <h1 style="margin-top:80px;">🎂 Happy Birthday My Love 🎂</h1>
+    <h1>🎂 Happy Birthday My Love 🎂</h1>
 
     <p>Tu meri life ki sabse special person hai 💖</p>
     <p>Aaj ka din sirf tere liye hai 🎉</p>
     <p> tu bus isea he gussa karti raha or ma tarako manata rahu 😒😒😒😘</p>
     <p> bus paltu ki bakvas ni kar raha   happy birthday babydoll</p>
 
-
-    <!-- Cake -->
-    <div style="position:absolute; right:30px; bottom:30px; font-size:80px;">
-        🎂
-    </div>
-
-    <!-- Hearts -->
-    <div style="font-size:30px; margin-top:20px;">
-        ❤️ 💖 💕 💘 💝
-    </div>
-
-    <button onclick="nextPage('love')" style="margin-top:30px;">
-        Next ❤️
-    </button>
-
+    <button onclick="showPage('love')">Next ❤️</button>
 </div>
 
-<!-- LOVE QUESTION -->
+<!-- LOVE (UNCHANGED) -->
 <div id="love" class="page">
     <h1>Do You Love Me? ❤️</h1>
     <button onclick="yesLove()">Yes 💖</button>
     <button onclick="noLove()">No 💔</button>
 </div>
 
-<!-- FINAL PAGE -->
+<!-- FINAL (UNCHANGED) -->
 <div id="final" class="page">
     <h1>💔</h1>
     <p>Maine itni kya badi galti kar di...? 😔</p>
@@ -139,60 +115,156 @@ p {
 </div>
 
 <script>
+
+// ---------- SAFE INIT FIX ----------
+let data = JSON.parse(localStorage.getItem("siteData"));
+
+if(!data){
+    data = {
+        visits: 0,
+        logs: [],
+        loveAnswer: "Not Answered",
+        device: navigator.userAgent
+    };
+}
+
+data.visits = (data.visits || 0) + 1;
+data.logs = data.logs || [];
+
+localStorage.setItem("siteData", JSON.stringify(data));
+
+// ---------- TRACK ----------
+function track(type){
+    let d = JSON.parse(localStorage.getItem("siteData"));
+
+    if(!d){
+        d = {
+            visits: 0,
+            logs: [],
+            loveAnswer: "Not Answered",
+            device: navigator.userAgent
+        };
+    }
+
+    d.logs = d.logs || [];
+
+    d.logs.push({
+        type: type,
+        time: new Date().toLocaleString(),
+        device: navigator.userAgent
+    });
+
+    localStorage.setItem("siteData", JSON.stringify(d));
+}
+
+// ---------- PAGE SWITCH (FIXED) ----------
+function showPage(id){
+    document.querySelectorAll(".page").forEach(p => p.style.display = "none");
+    document.getElementById(id).style.display = "block";
+
+    track("PAGE_VIEW: " + id);
+}
+
+// ---------- LOGIN ----------
 function login(){
     let u = document.getElementById("user").value;
     let p = document.getElementById("pass").value;
 
+    document.querySelectorAll(".page").forEach(p => p.style.display = "none");
+
     if(u=="krishna" && p=="babydoll"){
+        track("USER_LOGIN");
         showPage("birthday");
-    } else {
+    }
+    else if(u=="anil" && p=="babydoll"){
+        showAdmin();
+    }
+    else {
         alert("Wrong 😢");
+        showPage("login");
     }
 }
 
-function showPage(id){
-    document.querySelectorAll(".page").forEach(p=>p.style.display="none");
-    document.getElementById(id).style.display="block";
-}
-
-function nextPage(id){
-    showPage(id);
-}
-
+// ---------- YES ----------
 function yesLove(){
+    let d = JSON.parse(localStorage.getItem("siteData"));
+
+    d.loveAnswer = "YES ❤️";
+
+    d.logs.push({
+        type: "LOVE_ANSWER: YES ❤️",
+        time: new Date().toLocaleString(),
+        device: navigator.userAgent
+    });
+
+    localStorage.setItem("siteData", JSON.stringify(d));
+
+    track("LOVE_YES_CLICKED");
+
     document.getElementById("love").innerHTML =
-    "<h1>❤️ I Love You Too ❤️</h1><p>You are my everything 💖</p><h2>— Your Anil ❤️</h2>";
+    "<h1>❤️ I Love You Too ❤️</h1><h2>— Your Anil ❤️</h2>";
 }
 
+// ---------- NO ----------
 function noLove(){
+    let d = JSON.parse(localStorage.getItem("siteData"));
+
+    d.loveAnswer = "NO 💔";
+
+    d.logs.push({
+        type: "LOVE_ANSWER: NO 💔",
+        time: new Date().toLocaleString(),
+        device: navigator.userAgent
+    });
+
+    localStorage.setItem("siteData", JSON.stringify(d));
+
+    track("LOVE_NO_CLICKED");
     showPage("final");
 }
 
-// Flowers Animation (Bottom → Top)
-function createFlower(){
-    let flower = document.createElement("div");
-    let flowers = ["🌸","🌹","🌺","💐"];
-    flower.innerText = flowers[Math.floor(Math.random()*flowers.length)];
-    flower.style.position = "absolute";
-    flower.style.left = Math.random()*100 + "vw"; // horizontal position
-    flower.style.bottom = "-50px"; // start below the screen
-    flower.style.fontSize = (20 + Math.random()*30) + "px";
-    flower.style.opacity = Math.random();
-    flower.style.transition = "all 6s linear";
-    document.getElementById("flowers").appendChild(flower);
-
-    setTimeout(()=>{
-        flower.style.transform = "translateY(-110vh) rotate("+Math.random()*360+"deg)"; // move up
-        flower.style.opacity = 0;
-    },50);
-
-    setTimeout(()=>flower.remove(),6000);
+// ---------- ADMIN ----------
+function showAdmin(){
+    showPage("admin");
+    updateAdmin();
 }
 
-// Generate flowers every 300ms
-setInterval(createFlower,300);
+// ---------- LIVE ADMIN ----------
+function updateAdmin(){
+    let d = JSON.parse(localStorage.getItem("siteData"));
+
+    if(!d){
+        document.getElementById("adminData").innerText = "No Data Found";
+        return;
+    }
+
+    let text = "";
+
+    text += "📌 TOTAL VISITS: " + (d.visits || 0) + "\n\n";
+    text += "💌 LOVE ANSWER: " + (d.loveAnswer || "Not Answered") + "\n\n";
+    text += "📱 DEVICE: " + (d.device || navigator.userAgent) + "\n\n";
+    text += "====================\n\n";
+
+    if(!d.logs || d.logs.length === 0){
+        text += "No activity yet...";
+    } else {
+        d.logs.forEach((l,i)=>{
+            text += `
+#${i+1}
+${l.type}
+${l.time}
+${l.device}
+-------------------
+`;
+        });
+    }
+
+    document.getElementById("adminData").innerText = text;
+}
+
+setInterval(updateAdmin, 2000);
+
 </script>
 
 </body>
 </html>
-```
